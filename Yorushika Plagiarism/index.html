@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yorushika - Plagiarism Player</title>
+
+    <style>
+        /* ===== 기본 레이아웃 ===== */
+        body {
+            margin: 0;
+            background-color: #0b0b0b;
+            color: #ffffff;
+            font-family: 'Pretendard', sans-serif;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* ===== 왼쪽 앨범 사이드바 ===== */
+        .sidebar {
+            width: 350px;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: linear-gradient(180deg, #1a1a1a 0%, #0b0b0b 100%);
+            border-right: 1px solid #333;
+        }
+
+        .album-art {
+            width: 280px;
+            height: 280px;
+            border-radius: 8px;
+            object-fit: cover;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+        }
+
+        .album-info {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .album-info h1 {
+            margin: 10px 0;
+            font-size: 24px;
+        }
+
+        .album-info p {
+            color: #aaa;
+            font-size: 14px;
+        }
+
+        /* ===== 미니 플레이어 ===== */
+        .mini-player {
+            width: 100%;
+            margin-top: 30px;
+        }
+
+        /* 진행바 전체 영역 */
+        .progress-container {
+            width: 100%;
+            height: 4px;
+            background: #333;
+            border-radius: 2px;
+            margin-bottom: 8px;
+            cursor: pointer;
+
+            /* CSS 변수로 진행률 관리 */
+            --progress-width: 0%;
+        }
+
+        /* 실제 진행 바 */
+        .progress-bar {
+            width: var(--progress-width);
+            height: 100%;
+            background: #fff;
+            border-radius: 2px;
+            transition: width 0.1s linear;
+        }
+
+        /* 시간 표시 */
+        .time {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #aaa;
+            margin-bottom: 10px;
+        }
+
+        /* 컨트롤 버튼 */
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .play-btn {
+            width: 50px;
+            height: 50px;
+            background: #fff;
+            color: #000;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        /* ===== 오른쪽 트랙 리스트 ===== */
+        .tracklist-container {
+            flex-grow: 1;
+            padding: 40px;
+            overflow-y: auto;
+        }
+
+        .track-item {
+            display: grid;
+            grid-template-columns: 40px 1fr;
+            padding: 15px 10px;
+            border-bottom: 1px solid #222;
+            cursor: pointer;
+        }
+
+        .track-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .track-number {
+            color: #666;
+        }
+
+        .track-title {
+            font-weight: 500;
+        }
+
+        /* 재생 중인 트랙 표시 */
+        .track-item.active {
+            color: #1db954;
+        }
+
+        /* 보안 */
+        body.locked {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ===== 왼쪽 영역 ===== -->
+    <div class="sidebar">
+        <img src="album.jpg" alt="Album Cover" class="album-art">
+
+        <div class="album-info">
+            <h1>Plagiarism</h1>
+            <p>앨범 · 2020년<br>14곡 · 46분</p>
+        </div>
+
+        <!-- ===== 미니 플레이어 ===== -->
+        <div class="mini-player">
+
+            <!-- 진행바 -->
+            <div class="progress-container">
+                <div class="progress-bar"></div>
+            </div>
+
+            <!-- 시간 표시 -->
+            <div class="time">
+                <span id="current-time">0:00</span>
+                <span id="total-time">0:00</span>
+            </div>
+
+            <!-- 컨트롤 버튼 -->
+            <div class="controls">
+                <button id="prev-btn" class="btn">⏮</button>
+                <button id="play-btn" class="btn play-btn">▶</button>
+                <button id="next-btn" class="btn">⏭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== 트랙 리스트 ===== -->
+    <div class="tracklist-container">
+        <!-- data-track-id는 JS에서 어떤 곡인지 구분하기 위해 사용 -->
+        <div class="track-item" data-track-id="track1"><span class="track-number">1</span><span
+                class="track-title">Confession Of Plagiarist</span></div>
+        <div class="track-item" data-track-id="track2"><span class="track-number">2</span><span
+                class="track-title">Burglar</span></div>
+        <div class="track-item" data-track-id="track3"><span class="track-number">3</span><span
+                class="track-title">Prostitution</span></div>
+        <div class="track-item" data-track-id="track4"><span class="track-number">4</span><span
+                class="track-title">Bomber (Re-Recording)</span></div>
+        <div class="track-item" data-track-id="track5"><span class="track-number">5</span><span
+                class="track-title">Adolescent</span></div>
+        <div class="track-item" data-track-id="track6"><span class="track-number">6</span><span
+                class="track-title">Replicant</span></div>
+        <div class="track-item" data-track-id="track7"><span class="track-number">7</span><span
+                class="track-title">Flower And Badger Game</span></div>
+        <div class="track-item" data-track-id="track8"><span class="track-number">8</span><span
+                class="track-title">Middle Age, Plagiarist</span></div>
+        <div class="track-item" data-track-id="track9"><span class="track-number">9</span><span
+                class="track-title">Plagiarism</span></div>
+        <div class="track-item" data-track-id="track10"><span class="track-number">10</span><span
+                class="track-title">Thoughtcrime</span></div>
+        <div class="track-item" data-track-id="track11"><span class="track-number">11</span><span
+                class="track-title">Escape</span></div>
+        <div class="track-item" data-track-id="track12"><span class="track-number">12</span><span
+                class="track-title">Childhood, In Memories</span></div>
+        <div class="track-item" data-track-id="track13"><span class="track-number">13</span><span
+                class="track-title">Night Journey</span></div>
+        <div class="track-item" data-track-id="track14"><span class="track-number">14</span><span
+                class="track-title">Ghost In A Flower</span></div>
+    </div>
+
+    <body class="locked">
+
+
+    <!-- 실제 오디오 -->
+    <audio id="main-audio"></audio>
+
+    <script>
+        /* ===== DOM 요소 가져오기 ===== */
+        const audio = document.getElementById('main-audio');
+        const playBtn = document.getElementById('play-btn');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const progressContainer = document.querySelector('.progress-container');
+        const trackItems = document.querySelectorAll('.track-item');
+        const currentTimeEl = document.getElementById('current-time');
+        const totalTimeEl = document.getElementById('total-time');
+
+        /* ===== 트랙 ID → 실제 파일 매핑 ===== */
+        const trackMap = {
+            track1: "music/music1.mp3",
+            track2: "music/music2.mp3",
+            track3: "music/music3.mp3",
+            track4: "music/music4.mp3",
+            track5: "music/music5.mp3",
+            track6: "music/music6.mp3",
+            track7: "music/music7.mp3",
+            track8: "music/music8.mp3",
+            track9: "music/music9.mp3",
+            track10: "music/music10.mp3",
+            track11: "music/music11.mp3",
+            track12: "music/music12.mp3",
+            track13: "music/music13.mp3",
+            track14: "music/music14.mp3"
+        };
+
+        /* 현재 재생 중인 트랙 인덱스 */
+        let currentTrackIndex = -1;
+        const trackKeys = Object.keys(trackMap);
+
+        /* 초 → mm:ss 변환 */
+        function formatTime(sec) {
+            const m = Math.floor(sec / 60);
+            const s = Math.floor(sec % 60);
+            return `${m}:${s.toString().padStart(2, '0')}`;
+        }
+
+        /* 특정 인덱스 트랙 재생 */
+        function playTrackByIndex(index) {
+            if (index < 0 || index >= trackKeys.length) return;
+
+            audio.src = trackMap[trackKeys[index]];
+            audio.play();
+            playBtn.innerText = '⏸';
+
+            document.querySelector('.track-item.active')?.classList.remove('active');
+            trackItems[index].classList.add('active');
+
+            currentTrackIndex = index;
+        }
+
+        /* 재생 / 일시정지 */
+        playBtn.onclick = () => {
+            if (audio.paused) {
+                audio.play();
+                playBtn.innerText = '⏸';
+            } else {
+                audio.pause();
+                playBtn.innerText = '▶';
+            }
+        };
+
+        /* 이전 버튼 (5초 규칙) */
+        prevBtn.onclick = () => {
+            if (audio.currentTime > 5) {
+                audio.currentTime = 0;
+            } else {
+                playTrackByIndex(currentTrackIndex - 1);
+            }
+        };
+
+        /* 다음 버튼 */
+        nextBtn.onclick = () => {
+            playTrackByIndex(currentTrackIndex + 1);
+        };
+
+        /* 트랙 클릭 재생 */
+        trackItems.forEach((item, index) => {
+            item.onclick = () => playTrackByIndex(index);
+        });
+
+        /* 진행바 업데이트 + 현재 시간 */
+        audio.addEventListener('timeupdate', () => {
+            const percent = (audio.currentTime / audio.duration) * 100;
+            progressContainer.style.setProperty('--progress-width', `${percent}%`);
+            currentTimeEl.innerText = formatTime(audio.currentTime);
+        });
+
+        /* 전체 재생 시간 표시 */
+        audio.addEventListener('loadedmetadata', () => {
+            totalTimeEl.innerText = formatTime(audio.duration);
+        });
+
+        /* 진행바 클릭 시 시킹 */
+        progressContainer.onclick = (e) => {
+            const rect = progressContainer.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            audio.currentTime = (clickX / rect.width) * audio.duration;
+        };
+
+        /* 곡 끝나면 자동 다음 곡 */
+        audio.addEventListener('ended', () => {
+            playTrackByIndex(currentTrackIndex + 1);
+        });
+
+        /* 스페이스바 재생/정지 */
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                playBtn.click();
+            }
+        })
+
+        const PASSWORD = "1234"; // ← 원하는 비밀번호로 변경
+
+        window.addEventListener("load", () => {
+            const input = prompt("비밀번호를 입력하세요");
+
+            if (input === PASSWORD) {
+                document.body.classList.remove("locked");
+            } else {
+                alert("비밀번호가 틀렸습니다.");
+                // 틀리면 계속 검은 화면
+                document.body.innerHTML = "";
+                document.body.style.background = "#000";
+            }
+        });
+
+    </script>
+
+</body>
+
+</html>
